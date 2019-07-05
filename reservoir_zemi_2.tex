@@ -1,0 +1,125 @@
+\documentclass[10pt]{jsarticle}
+
+\usepackage[dvipdfmx]{graphicx}
+\graphicspath{{./resources/}}
+
+\usepackage{bm}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{multirow}
+\usepackage{cases}
+\usepackage{here}
+
+\usepackage{algorithmic}
+\usepackage{algorithm}
+
+\newtheorem{theo}{定理}[section]
+\newtheorem{defi}{定義}[section]
+\newtheorem{lemm}{補題}[section]
+
+\title{「Re-visiting the echo state property」のまとめ}
+\author{小西 文昂}
+
+\begin{document}
+\maketitle
+
+\section{概要}
+ESPが満たされるとき，時間経過とともに入力初期値の影響が消えるべきである．
+ESPを満たすために広く使われている基準として，リザバー層の重み行列のスペクトル半径(絶対最大固有値)が1以下になるように設定するというものがある．
+本研究では，この基準がESPを満たす十分条件ではないことを2次元分岐解析を用いて示す．
+また，ESPを満たすように重みを決めることのできるアルゴリズムを示す．
+
+\section{準備}
+\subsection{コンパクト性}
+ある集合がコンパクト性を満たすことは，距離空間において以下と同値である．
+\begin{itemize}
+	\item 点列コンパクトである
+	\item 有界閉集合である
+\end{itemize}
+
+点列コンパクトの定義は以下で与えられる．
+\begin{defi}
+	\textbf{点列コンパクト}~~~距離空間において，空間内の任意の無限点列が収束する部分列を持つ．
+\end{defi}
+
+有界閉集合$\Leftrightarrow$点列コンパクトの証明の概略は以下の通り．
+\begin{description}
+	\item[$\Rightarrow$の証明]:\\
+		無限点列を考えると，区間縮小法を用いれば収束部分列を取り出すことができる．
+	\item[$\Leftarrow$の証明]:\\
+		有界でないならば無限遠に発散するような数列が考えられるが，そのような点列は集積点を持たないので収束部分列を持たない．閉集合でない($\Leftrightarrow$開集合)ならば集積点を境界値にした点列を考えることができてしまうために閉集合である必要がある．
+\end{description}
+つまり，ESPの前提条件として，入力$u$とリザバーの状態$x$がコンパクト性を満たす必要があるが，
+入力$u$に関しては実質保証され(無限大の入力は実質ない)，状態$x$に関しても$tanh$で値域が制限されるため保証される．つまり，コンパクト性を満たすことは当然のことと考えて良い．
+
+\subsection{実無限(for all)と可能無限(for any)}
+\begin{description}
+	\item[実無限(for all)]: 無限個の$x$が存在する．
+	\item[可能無限(for any)]: 無限の点$x$が存在する．
+\end{description}
+
+\subsection{ゼロ列(null sequence)}
+\begin{align}
+	\{\delta_k | k\geq 0\}~is~null~sequence \Leftrightarrow \lim_{k\to \infty}\delta_k=0
+\end{align}
+
+\subsection{不安定と安定と漸近安定}
+\begin{description}
+	\item[不安定]: 値が発散する
+	\item[安定]: 発散はしないが，リミットサイクルもありえる
+	\item[漸近安定]: ある1点に収束する
+\end{description}
+
+\section{Echo state property}
+\begin{defi}
+	\textbf{Echo state property}\\
+	コンパクト条件を満たすネットワーク$F:X\times U\rightarrow X$は，以下のとき$U$に関してESPを持つ:
+	もし，2つのリザバーの状態列$x^{-\infty},y^{-\infty}\in X^{-\infty}$が，任意(可能無限)の左に無限の入力列$u^{-\infty}\in U^{-\infty}$と同値関係であるとき，$x_0=y_0$となる．\\
+	式で表せば，$(<x^{-\infty}, u^{-\infty}>~\in F)\land(<y^{-\infty}, u^{-\infty}>~\in F) \Rightarrow x_0=y_0$．
+\end{defi}
+
+\begin{theo}
+	\textbf{ESPの前向き特性}\\
+	コンパクト条件を満たすネットワーク$F:X\times U\rightarrow X$が$U$に関してESPを満たすことと一様状態契約(uniform state contraction)を持つことは同値である．
+	例えば(一様状態契約とは)，$x^{+\infty}, y^{+\infty}$が任意(実無限)の右に無限の入力列$u^{+\infty}\in U^{-\infty}$と同値関係であり、もし，ゼロ列(null sequence)$(\delta_k)_{k\geq 0}$が存在するならば，任意(実無限)の$k\geq 0$において$||x_k-y_k||\leq \delta_k$を満たす．($k$が大きくなるにつれて$||x_k-y_k||$がどんどん小さくなっていく)
+	
+\end{theo}
+
+\section{安定性解析}
+\subsection{1次元システム}
+入力ノード1つ，リザバー状態ノード1つの1次元の場合，分岐解析をすると，分岐点$W_c=1$で超臨界ピッチフォーク分岐が発生して，原点が不安定固定点になるので，1次元系で$\sigma(W)<1$がESPを満たすというのは正しい．
+
+\subsection{2次元システム}
+線形システムで，漸近安定にならない部分($|det(W)|\geq 1, \sigma(W)\geq 1$)を除くと，安定かどうか探索すべき領域(三角形)が生まれる．
+その三角形領域の中のある領域(ダイヤモンド形)は，Schur diagonal stabilityにより非線形システムにおいても漸近安定である(Section4.1で説明)．
+それ以外の三角形内の領域でうまく解析すると，ある条件のとき分岐が起こる(消滅する)ことがわかった．
+これにより，$\sigma(W)<1$は安定とは限らない．
+
+
+
+
+
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
